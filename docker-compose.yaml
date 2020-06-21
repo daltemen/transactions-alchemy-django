@@ -25,6 +25,8 @@ services:
       - .env
     depends_on:
       - transactions-db
+    networks:
+      - transactions_net
 
 networks:
   transactions_net:
