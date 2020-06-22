@@ -92,16 +92,25 @@ class ProcessorDB(ProcessorDBInterface):
         if paginator.page > 1:
             offset = (paginator.page - 1) * paginator.limit
 
-        count = (
-            session.query(func.count(TransactionDB.id))
-            .filter(TransactionDB.user_id == user_id)
-            .first()[0]
+        count = session.query(func.count(TransactionDB.id)).filter(
+            TransactionDB.user_id == user_id
         )
 
-        all_transactions: List[TransactionDB] = (
-            session.query(TransactionDB)
-            .filter(TransactionDB.user_id == user_id)
-            .order_by(getattr(TransactionDB, paginator.order_by))
+        all_transactions = session.query(TransactionDB).filter(
+            TransactionDB.user_id == user_id
+        )
+
+        if paginator.search != "":
+            count = count.filter(
+                TransactionDB.transaction_id.like(f"%{paginator.search}%")
+            )
+            all_transactions = all_transactions.filter(
+                TransactionDB.transaction_id.like(f"%{paginator.search}%")
+            )
+
+        count = count.first()[0]
+        all_transactions = (
+            all_transactions.order_by(getattr(TransactionDB, paginator.order_by))
             .limit(paginator.limit)
             .offset(offset)
             .all()
@@ -115,7 +124,9 @@ class ProcessorDB(ProcessorDBInterface):
         )
 
     @staticmethod
-    def _get_transactions_list_from_db(all_transactions: List[TransactionDB]) -> List[Transaction]:
+    def _get_transactions_list_from_db(
+        all_transactions: List[TransactionDB]
+    ) -> List[Transaction]:
         return list(
             map(
                 lambda t: Transaction(
@@ -128,6 +139,6 @@ class ProcessorDB(ProcessorDBInterface):
                     file_id=str(t.file_id),
                     user_id=int(t.user_id),
                 ),
-                all_transactions
+                all_transactions,
             )
         )
