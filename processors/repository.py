@@ -3,10 +3,17 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import List
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from processors.domain import TransactionFrame, File
-from processors.models import FileDB
+from processors.domain import (
+    TransactionFrame,
+    File,
+    Transaction,
+    TransactionList,
+    PaginatorDomain,
+)
+from processors.models import FileDB, TransactionDB
 from transactions.sessions import DBSession
 from transactions.settings import engine
 
@@ -27,7 +34,9 @@ class ProcessorDBInterface(ABC):
         pass
 
     @abstractmethod
-    def get_transactions_by_user_id(self, user_id: str) -> List[TransactionFrame]:
+    def get_transactions_by_user_id(
+        self, paginator: PaginatorDomain, user_id: int
+    ) -> TransactionList:
         pass
 
 
@@ -54,10 +63,7 @@ class ProcessorDB(ProcessorDBInterface):
         self._prepare_data_frame(transaction, file_id, user_id)
 
         transaction.data_frame.to_sql(
-            "transactions",
-            engine,
-            if_exists="append",
-            index_label="id"
+            "transactions", engine, if_exists="append", index_label="id"
         )
         return True
 
@@ -76,5 +82,52 @@ class ProcessorDB(ProcessorDBInterface):
 
         transaction.data_frame.set_index("id", inplace=True)
 
-    def get_transactions_by_user_id(self, user_id: str) -> List[TransactionFrame]:
-        pass
+    def get_transactions_by_user_id(
+        self, paginator: PaginatorDomain, user_id: int
+    ) -> TransactionList:
+        # TODO: search
+        session: Session = DBSession()
+
+        offset = 0
+        if paginator.page > 1:
+            offset = (paginator.page - 1) * paginator.limit
+
+        count = (
+            session.query(func.count(TransactionDB.id))
+            .filter(TransactionDB.user_id == user_id)
+            .first()[0]
+        )
+
+        all_transactions: List[TransactionDB] = (
+            session.query(TransactionDB)
+            .filter(TransactionDB.user_id == user_id)
+            .order_by(getattr(TransactionDB, paginator.order_by))
+            .limit(paginator.limit)
+            .offset(offset)
+            .all()
+        )
+
+        return TransactionList(
+            transactions=self._get_transactions_list_from_db(all_transactions),
+            count=count,
+            page=paginator.page,
+            next_page=paginator.page + 1,
+        )
+
+    @staticmethod
+    def _get_transactions_list_from_db(all_transactions: List[TransactionDB]) -> List[Transaction]:
+        return list(
+            map(
+                lambda t: Transaction(
+                    id=str(t.id),
+                    transaction_id=str(t.transaction_id),
+                    transaction_date=str(t.transaction_date),
+                    transaction_amount=int(t.transaction_amount),
+                    client_id=int(t.client_id),
+                    client_name=str(t.client_name),
+                    file_id=str(t.file_id),
+                    user_id=int(t.user_id),
+                ),
+                all_transactions
+            )
+        )
