@@ -40,14 +40,20 @@ python>=3.7 and requirements.txt dependencies with virtualenv
 pytest -s -v
 ```
 
-or if you prefer 
+or if you prefer docker 
+
+TODO: tests with docker
 
 # Curl Quickly Functional Tests
 
 ## Process File
 
 It will relate transactions to user authenticated (i.e. admin)
-Process File `POST http://localhost:8000/v1/processors/files`
+
+Process File 
+
+`POST http://localhost:8000/v1/processors/files`
+
 You can use `transactions_example.csv` of this repository to test
 
 **Auth required** : YES
@@ -61,13 +67,16 @@ curl --request POST \
   --url http://localhost:8000/v1/processors/files \
   --header 'authorization: Basic YWRtaW46YWRtaW4=' \
   --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
-  --form file=<Route of your file>
+  --form file=<path of your file>
 ```
 
 ## Get Transactions by User
 
 It will retrieve transactions related to user authenticated (i.e. admin)
-Process File `GET http://localhost:8000/v1/processors/transactions?limit=10&page=1&order_by=id&search=hola`
+
+Process File 
+
+`GET http://localhost:8000/v1/processors/transactions?limit=10&page=1&order_by=id&search=word`
 
 **Auth required** : YES
 
