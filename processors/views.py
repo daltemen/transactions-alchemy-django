@@ -10,7 +10,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 
-from processors.manager import ProcessorManager, FileInput, ListerHelper, ProcessorManagerInterface
+from processors.manager import (
+    ProcessorManager,
+    FileInput,
+    ListerHelper,
+    ProcessorManagerInterface,
+)
 from processors.repository import ProcessorDB
 
 # Simple dependency injection

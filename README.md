@@ -73,10 +73,11 @@ curl --request POST \
 ## Get Transactions by User
 
 It will retrieve transactions related to user authenticated (i.e. admin)
+only supports search by transaction_id
 
 Process File 
 
-`GET http://localhost:8000/v1/processors/transactions?limit=10&page=1&order_by=id&search=word`
+`GET http://localhost:8000/v1/processors/transactions?limit=10&page=1&order_by=id&search=52fba4fa`
 
 **Auth required** : YES
 
