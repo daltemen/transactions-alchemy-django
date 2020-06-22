@@ -58,7 +58,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
-db.sqlite3
+# db.sqlite3 for users
 db.sqlite3-journal
 
 # Flask stuff:
@@ -102,7 +102,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -127,3 +126,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# ide
+.idea
