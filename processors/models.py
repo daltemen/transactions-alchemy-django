@@ -4,16 +4,16 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class Transaction(Base):
+class TransactionDB(Base):
     __tablename__ = "transactions"
 
     id: Column = Column(String(36), primary_key=True)
     transaction_id: Column = Column(String(36))
     transaction_date: Column = Column(Date)
-    transaction_amount: Column = Column(Date)
-    client_id: Column = Column(Numeric)  # UserId in system
-    client_name: Column = Column(Numeric)
-
+    transaction_amount: Column = Column(Numeric)
+    client_id: Column = Column(Numeric)
+    client_name: Column = Column(String(50))
+    user_id: Column = Column(Numeric)
     file_id: Column = Column(String(36))
 
     def __repr__(self):
@@ -29,7 +29,7 @@ class Transaction(Base):
         )
 
 
-class File(Base):
+class FileDB(Base):
     __tablename__ = "files"
 
     id: Column = Column(String(36), primary_key=True)
