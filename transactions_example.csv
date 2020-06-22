@@ -1,0 +1,4 @@
+transaction_id,transaction_date,transaction_amount,client_id,client_name
+52fba4fa-3a01-4961-a809-e343dd4f9597,2020-06-01,10000,1067,nombre cliente
+52fba4fa-3a01-4961-a809-e343dd4f9599,2020-06-02,15000,1068,nombre cliente2
+52fba4fa-3a01-4961-a809-e343dd4f9602,2020-06-02,15000,1069,nombre cliente3
