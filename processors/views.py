@@ -10,8 +10,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 
-from processors.manager import ProcessorManager, FileInput, ListerHelper
+from processors.manager import ProcessorManager, FileInput, ListerHelper, ProcessorManagerInterface
 from processors.repository import ProcessorDB
+
+# Simple dependency injection
+_PROCESSOR_DB = ProcessorDB()
+_MANAGER: ProcessorManagerInterface = ProcessorManager(_PROCESSOR_DB)
 
 
 class FileUploadView(APIView):
@@ -28,18 +32,20 @@ class FileUploadView(APIView):
         name = file.name
         result: DataFrame = pandas.read_csv(file)
 
-        manager = ProcessorManager(ProcessorDB())
         file_input = FileInput(
             name=name, file_data_frame=result, user_id=request.user.id
         )
-        success = manager.process_file(file_input)
+        success = _MANAGER.process_file(file_input)
         return Response(status=204)
 
 
 class TransactionsList(APIView):
     """
-    List all transactions paginated
+    List all transactions paginated by user authenticated
     """
+
+    authentication_classes = [BasicAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request: Request):
         limit = request.GET.get("limit", 10)
@@ -47,8 +53,7 @@ class TransactionsList(APIView):
         order_by = request.GET.get("order_by", "id")
         search = request.GET.get("search", "")
 
-        manager = ProcessorManager(ProcessorDB())
-        result = manager.list_transactions(
-            ListerHelper(int(page), int(limit), order_by, search), 1
-        )  # TODO: request.user.id
+        result = _MANAGER.list_transactions(
+            ListerHelper(int(page), int(limit), order_by, search), request.user.id
+        )
         return Response(data=dataclasses.asdict(result), status=200)
